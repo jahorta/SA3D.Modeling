@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_2_blockmap_meta_v1",
+  "title": "Slice 2 NJ Blockmap + Metadata Shell",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 2 },
+    "slice_schema": { "const": "sa3d_slice_2_blockmap_meta_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blocks", "meta_blocks"],
+      "properties": {
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["offset", "header", "size"],
+            "properties": {
+              "offset": { "type": "integer", "minimum": 0 },
+              "header": { "type": "integer", "minimum": 0 },
+              "size": { "type": "integer", "minimum": 0 },
+              "selected_role": { "type": "string", "enum": ["model", "texture", "animation", "none"] }
+            }
+          }
+        },
+        "meta_blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "size"],
+            "properties": {
+              "type": { "type": "string" },
+              "size": { "type": "integer", "minimum": 0 },
+              "recognized": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["block_count", "recognized_meta_count", "unknown_meta_count", "selection_hash"],
+      "properties": {
+        "block_count": { "type": "integer", "minimum": 0 },
+        "recognized_meta_count": { "type": "integer", "minimum": 0 },
+        "unknown_meta_count": { "type": "integer", "minimum": 0 },
+        "selection_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_5_polychunk_strip_v1",
+  "title": "Slice 5 PolyChunk + Strip Semantics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 5 },
+    "slice_schema": { "const": "sa3d_slice_5_polychunk_strip_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["polychunk_histogram", "strip_summaries"],
+      "properties": {
+        "polychunk_histogram": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "count"],
+            "properties": {
+              "type": { "type": "string" },
+              "count": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "strip_summaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["strip_count", "triangle_attribute_count", "degenerate_count", "winding_flip_count"],
+            "properties": {
+              "strip_count": { "type": "integer", "minimum": 0 },
+              "triangle_attribute_count": { "type": "integer", "minimum": 0 },
+              "degenerate_count": { "type": "integer", "minimum": 0 },
+              "winding_flip_count": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["material_segments", "strip_hash"],
+      "properties": {
+        "material_segments": { "type": "integer", "minimum": 0 },
+        "strip_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_6_modelfile_entry_v1",
+  "title": "Slice 6 ModelFile Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 6 },
+    "slice_schema": { "const": "sa3d_slice_6_modelfile_entry_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detection_path", "selected_model_block"],
+      "properties": {
+        "detection_path": { "type": "string", "enum": ["sa", "nj"] },
+        "selected_model_block": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["offset", "header", "format"],
+          "properties": {
+            "offset": { "type": "integer", "minimum": 0 },
+            "header": { "type": "integer", "minimum": 0 },
+            "format": { "type": "string", "enum": ["sa1", "sadx", "sa2", "sa2b", "buffer"] }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_node_count", "has_textures", "model_hash"],
+      "properties": {
+        "model_node_count": { "type": "integer", "minimum": 0 },
+        "has_textures": { "type": "boolean" },
+        "model_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}
