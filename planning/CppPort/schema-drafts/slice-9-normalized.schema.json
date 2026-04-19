@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_9_normalized_v1",
+  "title": "Slice 9 Normalized Outputs",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 9 },
+    "slice_schema": { "const": "sa3d_slice_9_normalized_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["buffer_meshes", "weighted_meshes"],
+      "properties": {
+        "buffer_meshes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["vertices", "corners", "indices", "strippified"],
+            "properties": {
+              "vertices": { "type": "integer", "minimum": 0 },
+              "corners": { "type": "integer", "minimum": 0 },
+              "indices": { "type": "integer", "minimum": 0 },
+              "strippified": { "type": "boolean" },
+              "material_segments": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "weighted_meshes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["root_indices", "depending_indices", "has_normals", "has_colors"],
+            "properties": {
+              "root_indices": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+              "depending_indices": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+              "has_normals": { "type": "boolean" },
+              "has_colors": { "type": "boolean" },
+              "signature": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["buffer_mesh_count", "weighted_mesh_count", "normalized_hash"],
+      "properties": {
+        "buffer_mesh_count": { "type": "integer", "minimum": 0 },
+        "weighted_mesh_count": { "type": "integer", "minimum": 0 },
+        "normalized_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}

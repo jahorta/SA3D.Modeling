@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_4_attach_chunk_v1",
+  "title": "Slice 4 Attach Dispatch + CHUNK Container",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 4 },
+    "slice_schema": { "const": "sa3d_slice_4_attach_chunk_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attach_dispatch", "chunk_attaches"],
+      "properties": {
+        "attach_dispatch": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["node_index", "format"],
+            "properties": {
+              "node_index": { "type": "integer", "minimum": 0 },
+              "format": { "type": "string", "enum": ["basic", "chunk", "gc", "buffer", "none"] }
+            }
+          }
+        },
+        "chunk_attaches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "vertex_chunk_count", "poly_chunk_count", "has_weights"],
+            "properties": {
+              "label": { "type": "string" },
+              "vertex_chunk_count": { "type": "integer", "minimum": 0 },
+              "poly_chunk_count": { "type": "integer", "minimum": 0 },
+              "has_weights": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attach_count", "chunk_attach_count", "attach_hash"],
+      "properties": {
+        "attach_count": { "type": "integer", "minimum": 0 },
+        "chunk_attach_count": { "type": "integer", "minimum": 0 },
+        "attach_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}

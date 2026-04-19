@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_1_primitives_v1",
+  "title": "Slice 1 Primitives/LUT/BAMS",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 1 },
+    "slice_schema": { "const": "sa3d_slice_1_primitives_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endianness", "primitive_ops", "bams_checkpoints", "lut_ops"],
+      "properties": {
+        "endianness": { "type": "string", "enum": ["little", "big", "mixed"] },
+        "primitive_ops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["op", "type", "offset"],
+            "properties": {
+              "op": { "type": "string", "enum": ["read", "write"] },
+              "type": { "type": "string", "enum": ["int", "uint", "short", "ushort", "float", "vector2", "vector3", "color"] },
+              "offset": { "type": "integer", "minimum": 0 },
+              "image_base": { "type": "integer" },
+              "value_hint": {}
+            }
+          }
+        },
+        "bams_checkpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["input", "mode"],
+            "properties": {
+              "input": { "type": ["integer", "number"] },
+              "mode": { "type": "string", "enum": ["bams_to_rad", "rad_to_bams", "bams_to_deg", "deg_to_bams"] }
+            }
+          }
+        },
+        "lut_ops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "category"],
+            "properties": {
+              "action": { "type": "string", "enum": ["get", "add", "hit", "miss"] },
+              "category": { "type": "string", "enum": ["node", "attach", "motion", "nodemotion", "polychunk", "other"] },
+              "address": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primitive_hash", "bams_hash", "lut_summary"],
+      "properties": {
+        "primitive_hash": { "type": "string", "minLength": 8 },
+        "bams_hash": { "type": "string", "minLength": 8 },
+        "lut_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["adds", "hits", "misses"],
+          "properties": {
+            "adds": { "type": "integer", "minimum": 0 },
+            "hits": { "type": "integer", "minimum": 0 },
+            "misses": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_3_nodecore_v1",
+  "title": "Slice 3 Node Core",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 3 },
+    "slice_schema": { "const": "sa3d_slice_3_nodecore_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodes"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["index", "attributes", "rotation_mode", "has_attach"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 0 },
+              "attributes": { "type": "array", "items": { "type": "string" } },
+              "rotation_mode": { "type": "string", "enum": ["euler", "quaternion"] },
+              "has_attach": { "type": "boolean" },
+              "child_index": { "type": ["integer", "null"], "minimum": 0 },
+              "sibling_index": { "type": ["integer", "null"], "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_count", "max_depth", "graph_hash"],
+      "properties": {
+        "node_count": { "type": "integer", "minimum": 0 },
+        "max_depth": { "type": "integer", "minimum": 0 },
+        "graph_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/sa3d/cppport/schema/sa3d_slice_8_animationfile_entry_v1",
+  "title": "Slice 8 AnimationFile Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slice", "slice_schema", "stage", "run_id", "fixture_id", "operation_count", "diagnostic_count", "inputs", "outputs"],
+  "properties": {
+    "slice": { "const": 8 },
+    "slice_schema": { "const": "sa3d_slice_8_animationfile_entry_v1" },
+    "stage": { "$ref": "common-defs.schema.json#/$defs/stage" },
+    "run_id": { "$ref": "common-defs.schema.json#/$defs/run_id" },
+    "fixture_id": { "$ref": "common-defs.schema.json#/$defs/fixture_id" },
+    "operation_count": { "$ref": "common-defs.schema.json#/$defs/operation_count" },
+    "diagnostic_count": { "$ref": "common-defs.schema.json#/$defs/diagnostic_count" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detection_path", "node_count_source", "short_rot_source"],
+      "properties": {
+        "detection_path": { "type": "string", "enum": ["sa", "nj"] },
+        "node_count_source": { "type": "string", "enum": ["file", "fallback_arg", "none"] },
+        "short_rot_source": { "type": "string", "enum": ["file", "fallback_arg", "default_false"] }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["motion_present", "node_count", "animation_hash"],
+      "properties": {
+        "motion_present": { "type": "boolean" },
+        "node_count": { "type": "integer", "minimum": 0 },
+        "animation_hash": { "type": "string", "minLength": 8 }
+      }
+    },
+    "diagnostics": { "$ref": "common-defs.schema.json#/$defs/diagnostics" }
+  }
+}
