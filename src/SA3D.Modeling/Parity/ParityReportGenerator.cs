@@ -69,7 +69,7 @@ namespace SA3D.Modeling.Parity
 		public static void WriteToFile(ParityReport report, string filepath)
 		{
 			string json = JsonSerializer.Serialize(report, _serializerOptions);
-			File.WriteAllText(filepath, json, new UTF8Encoding(false));
+            System.IO.File.WriteAllText(filepath, json, new UTF8Encoding(false));
 		}
 
 		private static SliceIOPair CreateSlice1(byte[] data, string fixtureId, string runId)
@@ -144,7 +144,7 @@ namespace SA3D.Modeling.Parity
 
 		private static SliceIOPair CreateSlice2(byte[] data, string fixtureId, string runId)
 		{
-			IReadOnlyList<NJBlockInfo> blocks = NJDebugInfo.ReadBlocks(data);
+			IReadOnlyList<NJBlockInfo> blocks = NJDebugInfo.ReadBlocks(data, 0);
 			object inputs = new
 			{
 				blocks = blocks.Select(x => new

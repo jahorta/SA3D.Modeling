@@ -11,7 +11,7 @@ namespace SA3D.Modeling.File
 		/// <summary>
 		/// Read a flat list of NJ blocks from a binary blob.
 		/// </summary>
-		public static IReadOnlyList<NJBlockInfo> ReadBlocks(byte[] data, uint address = 0)
+		public static IReadOnlyList<NJBlockInfo> ReadBlocks(byte[] data, uint address)
 		{
 			using EndianStackReader reader = new(data);
 			return ReadBlocks(reader, address);
@@ -20,7 +20,7 @@ namespace SA3D.Modeling.File
 		/// <summary>
 		/// Read a flat list of NJ blocks from a reader.
 		/// </summary>
-		public static IReadOnlyList<NJBlockInfo> ReadBlocks(EndianStackReader reader, uint address = 0)
+		public static IReadOnlyList<NJBlockInfo> ReadBlocks(EndianStackReader reader, uint address)
 		{
 			List<NJBlockInfo> result = [];
 
