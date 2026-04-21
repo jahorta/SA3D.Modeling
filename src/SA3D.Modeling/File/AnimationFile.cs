@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using static SA3D.Modeling.File.FileHeaders;
 using SA3D.Common;
+using SA3D.Modeling.Parity;
 
 namespace SA3D.Modeling.File
 {
@@ -82,7 +83,9 @@ namespace SA3D.Modeling.File
 		private static bool CheckIsSAAnimFile(EndianStackReader reader, uint address)
 		{
 			reader.PushBigEndian(false);
-			bool result = (reader.ReadULong(address) & HeaderMask) == SAANIM;
+			ulong header = reader.ReadULong(address);
+			ParityCaptureHooks.RecordPrimitiveRead("uint", address, reader.ImageBase, header);
+			bool result = (header & HeaderMask) == SAANIM;
 			reader.PopEndian();
 			return result;
 		}
@@ -234,12 +237,14 @@ namespace SA3D.Modeling.File
 		private static AnimationFile ReadSA(EndianStackReader reader, uint address, uint? nodeCount, bool shortRot)
 		{
 			byte version = reader[7];
+			ParityCaptureHooks.RecordPrimitiveRead("uint", address + 7, reader.ImageBase, version);
 			if(version > CurrentAnimVersion)
 			{
 				throw new FormatException("Not a valid SAANIM file.");
 			}
 
 			uint motionAddress = reader.ReadUInt(address + 8);
+			ParityCaptureHooks.RecordPrimitiveRead("uint", address + 8, reader.ImageBase, motionAddress);
 
 			MetaData metaData = new();
 			if(version >= 2)
@@ -256,6 +261,7 @@ namespace SA3D.Modeling.File
 			{
 				const uint shortRotMask = (uint)Flag32.B31;
 				uint fileNodeCount = reader.ReadUInt(0x10);
+				ParityCaptureHooks.RecordPrimitiveRead("uint", address + 0x10, reader.ImageBase, fileNodeCount);
 				shortRot = (fileNodeCount & shortRotMask) != 0;
 				nodeCount = fileNodeCount & ~shortRotMask;
 			}

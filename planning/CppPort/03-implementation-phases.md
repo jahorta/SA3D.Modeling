@@ -3,6 +3,18 @@
 Date: 2026-04-19
 Status: Proposed
 
+
+## Capture direction (updated 2026-04-21)
+
+Parity capture must execute through the **normal SA3D adapters/parsers** (e.g., `ModelFile.Read*`, `AnimationFile.Read*`) and must not rely on synthetic stand-alone slice logic.
+
+Implementation direction:
+
+- Introduce a shared capture session that tracks requested slices and pair limits.
+- Slice-relevant classes record input/output pairs during regular parsing.
+- `ParityReportGenerator` is the orchestration entrypoint that starts capture, invokes normal parsing, and materializes the final report.
+- The same recording mechanism must scale across all slices (`1..9`) with per-slice hooks and schemas.
+
 ## Phase A — Schema + contract definition
 
 ### Deliverables
