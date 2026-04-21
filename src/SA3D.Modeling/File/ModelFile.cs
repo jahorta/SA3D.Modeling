@@ -10,6 +10,7 @@ using SA3D.Modeling.File.Structs;
 using SA3D.Modeling.ObjectData.Structs;
 using SA3D.Texturing.Texname;
 using System.Collections.Generic;
+using SA3D.Modeling.Parity;
 
 namespace SA3D.Modeling.File
 {
@@ -109,7 +110,10 @@ namespace SA3D.Modeling.File
 		{
 			reader.PushBigEndian(false);
 
-			bool result = (reader.ReadULong(address) & HeaderMask) switch
+			ulong header = reader.ReadULong(address);
+			ParityCaptureHooks.RecordPrimitiveRead("uint", address, reader.ImageBase, header);
+
+			bool result = (header & HeaderMask) switch
 			{
 				SA1MDL or SADXMDL or SA2MDL or SA2BMDL or BUFMDL => true,
 				_ => false,
@@ -254,6 +258,7 @@ namespace SA3D.Modeling.File
 
 			// checking the version
 			byte version = reader[address + 7];
+			ParityCaptureHooks.RecordPrimitiveRead("uint", address + 7, reader.ImageBase, version);
 			if(version > CurrentModelVersion)
 			{
 				throw new FormatException("File invalid; Unsupported version");
@@ -269,6 +274,7 @@ namespace SA3D.Modeling.File
 			}
 
 			uint modelAddr = reader.ReadPointer(address + 8);
+			ParityCaptureHooks.RecordPrimitiveRead("uint", address + 8, reader.ImageBase, modelAddr);
 			Node model = Node.Read(reader, modelAddr, format, lut);
 
 			if(metaData.MetaWeights.Count > 0)

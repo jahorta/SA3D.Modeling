@@ -32,3 +32,14 @@ Status: Implemented (initial)
 - Slice 1 LUT operations summary is currently zeroed (no internal LUT event stream yet).
 - Full fixture-driven acceptance test harness and CI integration are pending.
 
+
+## Direction update (2026-04-21)
+
+To support upcoming slices uniformly:
+
+- Parity capture now targets instrumentation of normal parser execution instead of synthetic slice generation.
+- A shared capture session concept is used to gate requested slices and cap pair counts per slice.
+- `ParityReportGenerator` remains the entrypoint and now owns session lifecycle + adapter invocation + report projection.
+- Slice 1/2 synthetic stubs are replaced by data assembled from captured parser events.
+- This scaffolding is intended for extension to slices 3..9 using the same hook-and-projection model.
+

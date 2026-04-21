@@ -1,9 +1,6 @@
-﻿using SA3D.Common.IO;
-using SA3D.Modeling.File;
-using SA3D.Modeling.Structs;
+﻿using SA3D.Modeling.File;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -49,17 +46,12 @@ namespace SA3D.Modeling.Parity
 				return report;
 			}
 
-			if(options.EmitSlice1)
-			{
-				report.SliceIOPairs.Add(CreateSlice1(data, fixtureId, runId));
-			}
-
-			if(options.EmitSlice2)
-			{
-				report.SliceIOPairs.Add(CreateSlice2(data, fixtureId, runId));
-			}
+			using ParityCaptureSession session = ParityCaptureSession.Begin(options);
+			RunParserEntry(data, options, report);
+			BuildSlices(report, fixtureId, runId, session);
 
 			report.Metrics["slice_count"] = report.SliceIOPairs.Count;
+			report.Metrics["max_pairs_per_slice"] = session.MaxPairsPerSlice;
 			return report;
 		}
 
@@ -69,51 +61,108 @@ namespace SA3D.Modeling.Parity
 		public static void WriteToFile(ParityReport report, string filepath)
 		{
 			string json = JsonSerializer.Serialize(report, _serializerOptions);
-            System.IO.File.WriteAllText(filepath, json, new UTF8Encoding(false));
+			System.IO.File.WriteAllText(filepath, json, new UTF8Encoding(false));
 		}
 
-		private static SliceIOPair CreateSlice1(byte[] data, string fixtureId, string runId)
+		private static void RunParserEntry(byte[] data, ParityCaptureOptions options, ParityReport report)
 		{
-			List<Dictionary<string, object>> primitiveOps = [];
-			using EndianStackReader reader = new(data);
-
-			if(data.Length >= 4)
+			try
 			{
-				primitiveOps.Add(new()
+				switch(options.ParseAdapter)
 				{
-					["op"] = "read",
-					["type"] = "uint",
-					["offset"] = 0,
-					["image_base"] = reader.ImageBase,
-					["value_hint"] = reader.ReadUInt(0),
+					case ParityParseAdapter.ModelFile:
+						ModelFile.ReadFromBytes(data, options.Address);
+						break;
+					case ParityParseAdapter.AnimationFile:
+						AnimationFile.ReadFromBytes(data, options.Address, options.AnimationNodeCount, options.AnimationShortRot);
+						break;
+					default:
+						if(ModelFile.CheckIsModelFile(data, options.Address))
+						{
+							ModelFile.ReadFromBytes(data, options.Address);
+						}
+						else if(AnimationFile.CheckIsAnimationFile(data, options.Address))
+						{
+							AnimationFile.ReadFromBytes(data, options.Address, options.AnimationNodeCount, options.AnimationShortRot);
+						}
+						else
+						{
+							report.Diagnostics.Add(new()
+							{
+								["code"] = "parity_no_adapter_match",
+								["severity"] = "warning",
+								["stage"] = "entry",
+								["message"] = "Input bytes did not match ModelFile or AnimationFile adapter checks",
+							});
+						}
+						break;
+				}
+			}
+			catch(Exception ex)
+			{
+				report.Diagnostics.Add(new()
+				{
+					["code"] = "parity_capture_exception",
+					["severity"] = "error",
+					["stage"] = "entry",
+					["message"] = ex.Message,
+					["exception_type"] = ex.GetType().FullName ?? ex.GetType().Name,
 				});
 			}
+		}
 
-			if(data.Length >= 8)
+		private static void BuildSlices(ParityReport report, string fixtureId, string runId, ParityCaptureSession session)
+		{
+			IReadOnlyDictionary<int, IReadOnlyList<ParityIORecord>> recordsBySlice = session.GetRecords();
+			foreach((int slice, IReadOnlyList<ParityIORecord> records) in recordsBySlice.OrderBy(x => x.Key))
 			{
-				primitiveOps.Add(new()
+				switch(slice)
 				{
-					["op"] = "read",
-					["type"] = "float",
-					["offset"] = 4,
-					["image_base"] = reader.ImageBase,
-					["value_hint"] = reader.ReadFloat(4),
-				});
+					case 1:
+						report.SliceIOPairs.Add(BuildSlice1(records, fixtureId, runId, session.GetDroppedCount(slice)));
+						break;
+					case 2:
+						report.SliceIOPairs.Add(BuildSlice2(records, fixtureId, runId, session.GetDroppedCount(slice)));
+						break;
+				}
 			}
+		}
 
-			List<Dictionary<string, object>> bams =
-			[
-				new() { ["input"] = 0, ["mode"] = "bams_to_rad", ["output"] = BAMSFHelper.BAMSFToRad(0) },
-				new() { ["input"] = 32767, ["mode"] = "bams_to_rad", ["output"] = BAMSFHelper.BAMSFToRad(32767) },
-				new() { ["input"] = 65535f / 2f, ["mode"] = "deg_to_bams", ["output"] = BAMSFHelper.DegToBAMSF(180f) },
-			];
+		private static SliceIOPair BuildSlice1(IReadOnlyList<ParityIORecord> records, string fixtureId, string runId, int droppedCount)
+		{
+			List<object> primitiveOps = records
+				.Where(x => x.Operation == "primitive_op")
+				.Select(x =>
+				{
+					Dictionary<string, object?> input = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(x.Inputs))!;
+					Dictionary<string, object?> output = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(x.Outputs))!;
+					input["value_hint"] = output["value_hint"];
+					return (object)input;
+				})
+				.ToList();
+
+			List<object> bams = records
+				.Where(x => x.Operation == "bams_checkpoint")
+				.Select(x =>
+				{
+					Dictionary<string, object?> input = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(x.Inputs))!;
+					Dictionary<string, object?> output = JsonSerializer.Deserialize<Dictionary<string, object?>>(JsonSerializer.Serialize(x.Outputs))!;
+					input["output"] = output["output"];
+					return (object)input;
+				})
+				.ToList();
+
+			List<object> lutOps = records
+				.Where(x => x.Operation == "lut_op")
+				.Select(x => (object)x.Inputs)
+				.ToList();
 
 			object inputs = new
 			{
 				endianness = "mixed",
 				primitive_ops = primitiveOps,
 				bams_checkpoints = bams,
-				lut_ops = Array.Empty<object>(),
+				lut_ops = lutOps,
 			};
 
 			object outputs = new
@@ -122,10 +171,11 @@ namespace SA3D.Modeling.Parity
 				bams_hash = ComputeHash(bams),
 				lut_summary = new
 				{
-					adds = 0,
+					adds = lutOps.Count,
 					hits = 0,
 					misses = 0,
-				}
+				},
+				truncated_pairs = droppedCount,
 			};
 
 			return new()
@@ -135,37 +185,42 @@ namespace SA3D.Modeling.Parity
 				Stage = "slice_1_primitives",
 				RunId = runId,
 				FixtureId = fixtureId,
-				OperationCount = primitiveOps.Count + bams.Count,
+				OperationCount = records.Count,
 				DiagnosticCount = 0,
 				Inputs = inputs,
 				Outputs = outputs,
 			};
 		}
 
-		private static SliceIOPair CreateSlice2(byte[] data, string fixtureId, string runId)
+		private static SliceIOPair BuildSlice2(IReadOnlyList<ParityIORecord> records, string fixtureId, string runId, int droppedCount)
 		{
-			IReadOnlyList<NJBlockInfo> blocks = NJDebugInfo.ReadBlocks(data, 0);
+			ParityIORecord? blockRecord = records.LastOrDefault(x => x.Operation == "nj_blocks");
+			List<object> blocks = [];
+			if(blockRecord.Operation != null)
+			{
+				Dictionary<string, JsonElement> input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(blockRecord.Inputs))!;
+				if(input.TryGetValue("blocks", out JsonElement blockElement) && blockElement.ValueKind == JsonValueKind.Array)
+				{
+					foreach(JsonElement item in blockElement.EnumerateArray())
+					{
+						blocks.Add(JsonSerializer.Deserialize<Dictionary<string, object?>>(item.GetRawText())!);
+					}
+				}
+			}
+
 			object inputs = new
 			{
-				blocks = blocks.Select(x => new
-				{
-					offset = x.Offset,
-					header = x.Header,
-					size = x.Size,
-					selected_role = x.Role,
-				}),
+				blocks,
 				meta_blocks = Array.Empty<object>(),
 			};
-
-			int recognizedMeta = 0;
-			int unknownMeta = 0;
 
 			object outputs = new
 			{
 				block_count = blocks.Count,
-				recognized_meta_count = recognizedMeta,
-				unknown_meta_count = unknownMeta,
+				recognized_meta_count = 0,
+				unknown_meta_count = 0,
 				selection_hash = ComputeHash(blocks),
+				truncated_pairs = droppedCount,
 			};
 
 			return new()
@@ -175,7 +230,7 @@ namespace SA3D.Modeling.Parity
 				Stage = "slice_2_blockmap_meta",
 				RunId = runId,
 				FixtureId = fixtureId,
-				OperationCount = blocks.Count,
+				OperationCount = records.Count,
 				DiagnosticCount = 0,
 				Inputs = inputs,
 				Outputs = outputs,

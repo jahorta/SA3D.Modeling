@@ -1,4 +1,5 @@
 ﻿using SA3D.Common.IO;
+using SA3D.Modeling.Parity;
 using System.Collections.Generic;
 
 namespace SA3D.Modeling.File
@@ -31,9 +32,11 @@ namespace SA3D.Modeling.File
 			{
 				reader.PushBigEndian(false);
 				uint blockHeader = reader.ReadUInt(blockAddress);
+				ParityCaptureHooks.RecordPrimitiveRead("uint", blockAddress, reader.ImageBase, blockHeader);
 				reader.PopEndian();
 
 				uint blockSize = reader.ReadUInt(blockAddress + 4);
+				ParityCaptureHooks.RecordPrimitiveRead("uint", blockAddress + 4, reader.ImageBase, blockSize);
 				if(blockHeader == 0 || blockSize == 0)
 				{
 					break;
@@ -49,6 +52,7 @@ namespace SA3D.Modeling.File
 			}
 
 			reader.PopEndian();
+			ParityCaptureHooks.RecordNJBlockScan(result);
 			return result;
 		}
 

@@ -3,6 +3,7 @@ using SA3D.Modeling.Animation;
 using SA3D.Modeling.Mesh;
 using SA3D.Modeling.Mesh.Chunk;
 using SA3D.Modeling.ObjectData;
+using SA3D.Modeling.Parity;
 using System.Collections.Generic;
 
 namespace SA3D.Modeling.Structs
@@ -64,6 +65,18 @@ namespace SA3D.Modeling.Structs
 		/// <inheritdoc/>
 		protected override void AddEntry(uint address, object value)
 		{
+			string category = value switch
+			{
+				Node => "node",
+				Attach => "attach",
+				Motion => "motion",
+				NodeMotion => "nodemotion",
+				PolyChunk => "polychunk",
+				_ => "other",
+			};
+
+			ParityCaptureHooks.RecordLutOp("add", category, address);
+
 			switch(value)
 			{
 				case Node node:

@@ -1,5 +1,7 @@
 ﻿using System;
 
+using SA3D.Modeling.Parity;
+
 namespace SA3D.Modeling.Structs
 {
 	/// <summary>
@@ -24,7 +26,9 @@ namespace SA3D.Modeling.Structs
 		/// <returns></returns>
 		public static float BAMSFToRad(int BAMS)
 		{
-			return BAMS / BAMSF2Rad;
+			float result = BAMS / BAMSF2Rad;
+			ParityCaptureHooks.RecordBamsConversion("bams_to_rad", BAMS, result);
+			return result;
 		}
 
 		/// <summary>
@@ -34,7 +38,9 @@ namespace SA3D.Modeling.Structs
 		/// <returns></returns>
 		public static int RadToBAMSF(float rad)
 		{
-			return (int)Math.Round(rad * BAMSF2Rad);
+			int result = (int)Math.Round(rad * BAMSF2Rad);
+			ParityCaptureHooks.RecordBamsConversion("rad_to_bams", rad, result);
+			return result;
 		}
 
 		/// <summary>
@@ -42,7 +48,9 @@ namespace SA3D.Modeling.Structs
 		/// </summary>
 		public static float BAMSFToDeg(int BAMS)
 		{
-			return BAMS / BAMSF2Deg;
+			float result = BAMS / BAMSF2Deg;
+			ParityCaptureHooks.RecordBamsConversion("bams_to_deg", BAMS, result);
+			return result;
 		}
 
 		/// <summary>
@@ -50,7 +58,9 @@ namespace SA3D.Modeling.Structs
 		/// </summary>
 		public static int DegToBAMSF(float deg)
 		{
-			return (int)Math.Round(deg * BAMSF2Deg);
+			int result = (int)Math.Round(deg * BAMSF2Deg);
+			ParityCaptureHooks.RecordBamsConversion("deg_to_bams", deg, result);
+			return result;
 		}
 
 	}
