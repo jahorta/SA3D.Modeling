@@ -1,4 +1,4 @@
-﻿using SA3D.Modeling.File;
+using SA3D.Modeling.File;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -196,9 +196,9 @@ namespace SA3D.Modeling.Parity
 		{
 			ParityIORecord? blockRecord = records.LastOrDefault(x => x.Operation == "nj_blocks");
 			List<object> blocks = [];
-			if(blockRecord.Operation != null)
+			if(blockRecord.HasValue)
 			{
-				Dictionary<string, JsonElement> input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(blockRecord.Inputs))!;
+				Dictionary<string, JsonElement> input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(blockRecord.Value.Inputs))!;
 				if(input.TryGetValue("blocks", out JsonElement blockElement) && blockElement.ValueKind == JsonValueKind.Array)
 				{
 					foreach(JsonElement item in blockElement.EnumerateArray())
